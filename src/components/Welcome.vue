@@ -18,7 +18,8 @@ export default {
   }),
   methods: {
     login () {
-      window.$cookies.set('auth', this.nick)
+      this.$cookies.set('auth', this.nick)
+      this.$router.push({name: 'Chat', params: { nick: this.nick }})
     },
     isDisabled () {
       return this.nick.length === 0
@@ -71,7 +72,7 @@ button:hover {
   position: relative;
   text-align: center;
 }
-.disable {
+.disable, .disable:hover {
   background: #999999;
 }
 </style>
