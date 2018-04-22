@@ -3,8 +3,8 @@
     <h1>{{ msg }}</h1>
     <h2>Choose your nickname and login to chat</h2>
     <div class="login">
-      <input type="text" name="nick" class="nick" placeholder="Nickname">
-      <button>Go!</button>
+      <input type="text" class="nick" placeholder="Nickname" v-model="nick" >
+      <button v-on:click="login()" :disabled="isDisabled()" :class="{ disable: isDisabled() }" >Go!</button>
     </div>
   </div>
 </template>
@@ -12,9 +12,16 @@
 <script>
 export default {
   name: 'welcome',
-  data () {
-    return {
-      msg: 'Welcome to Dino chat'
+  data: () => ({
+    msg: 'Welcome to Dino chat',
+    nick: ''
+  }),
+  methods: {
+    login () {
+      window.$cookies.set('auth', this.nick)
+    },
+    isDisabled () {
+      return this.nick.length === 0
     }
   }
 }
@@ -63,5 +70,8 @@ button:hover {
 .login {
   position: relative;
   text-align: center;
+}
+.disable {
+  background: #999999;
 }
 </style>
