@@ -16,6 +16,9 @@
 
 <script>
 import ChatBox from './ChatBox'
+import io from 'socket.io-client'
+
+const socket = io()
 
 export default {
   name: 'chat',
@@ -24,26 +27,27 @@ export default {
   },
   data: () => ({
     nick: window.$cookies.get('auth'),
-    messages: [
-      { nick: 'dino', message: 'Hola, como andas?' },
-      { nick: 'raul', message: 'Bien, y vos?' },
-      { nick: 'dino', message: 'bien, al pedooooo' },
-      { nick: '_klifort_', message: 'Que onda viejoooooo' },
-      { nick: 'autobot', message: 'We can use the v-for directive to render a list of items based on an array. The v-for directive requires a special syntax in the form of item in items, where items is the source data array and item is an alias for the array element being iterate' },
-      { nick: '_klifort_', message: 'jaja quien te conoce bot' }
-    ],
+    messages: [],
     msg: ''
   }),
   methods: {
     send () {
       if (this.msg.length > 0) {
-        this.messages = [...this.messages, {nick: this.nick, message: this.msg}]
+        socket.emit('chat', {
+          nick: this.nick,
+          message: this.msg
+        })
         this.msg = ''
       }
     }
   },
   components: {
     ChatBox
+  },
+  created () {
+    socket.on('chat', (data) => {
+      this.messages.push(data)
+    })
   }
 }
 </script>
