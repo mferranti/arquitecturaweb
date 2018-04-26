@@ -18,4 +18,8 @@ const io = socket(server);
 
 io.on('connection', (socket) => {
   console.log('made socket connection', socket.id);
+  socket.on('chat', function(data){
+    io.sockets.emit('chat', data);
+    console.log('This is the data', data);
+  });
 });
