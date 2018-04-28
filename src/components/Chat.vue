@@ -79,13 +79,13 @@ export default {
           message
         ]
       }
+      if (!this.targets.includes(data.target)) {
+        this.targets = [
+          ...this.targets,
+          data.target
+        ]
+      }
     })
-    if (!this.targets.includes(data.target)) {
-      this.targets = [
-        ...targets,
-        data.target
-      ]
-    }
   },
   components: {
     ChatBox,
