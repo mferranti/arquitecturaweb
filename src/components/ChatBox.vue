@@ -1,7 +1,7 @@
 <template>
   <ul id="chat-box">
     <li v-for="(item, index) in messages" :key="index" class="chat-item">
-      <span class="nick">@{{ item.nick }}: </span>
+      <span class="nick" v-on:click="changeTarget(item.nick)">@{{ item.nick }}: </span>
       <span>{{ item.message }}</span>
     </li>
   </ul>
@@ -10,7 +10,7 @@
 <script>
 export default {
   name: 'chat-box',
-  props: ['messages'],
+  props: ['messages', 'changeTarget'],
   updated: () => {
     const chatBox = document.getElementById('chat-box')
     chatBox.scrollTo(0, chatBox.scrollHeight)
@@ -22,6 +22,7 @@ export default {
 #chat-box {
   overflow: auto;
   height: 400px;
+  width: 100%;
 }
 .chat-item {
   padding: 15px 15px;
@@ -30,5 +31,6 @@ export default {
 .nick {
   font-weight: bold;
   color: #005fa2;
+  cursor: pointer;
 }
 </style>

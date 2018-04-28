@@ -1,6 +1,9 @@
 <template>
   <div class="container">
-    <chat-box :messages="messages"></chat-box>
+    <div class="container-chat-box">
+      <chat-menu class="chat-menu" :targets="targets" :changeTarget="changeTarget"></chat-menu>
+      <chat-box :messages="targetMessages" :changeTarget="changeTarget"></chat-box>
+    </div>
     <div class="input-container">
       <input
         type="text"
@@ -16,6 +19,8 @@
 
 <script>
 import ChatBox from './ChatBox'
+import ChatMenu from './ChatMenu'
+
 import io from 'socket.io-client'
 
 const socket = io()
@@ -27,27 +32,58 @@ export default {
   },
   data: () => ({
     nick: window.$cookies.get('auth'),
-    messages: [],
-    msg: ''
+    messages: {},
+    msg: '',
+    targets: [
+      'global'
+    ],
+    selected: 'global'
   }),
   methods: {
     send () {
       if (this.msg.length > 0) {
         socket.emit('chat', {
+          target: this.selected,
           nick: this.nick,
           message: this.msg
         })
         this.msg = ''
       }
+    },
+    changeTarget (target) {
+      this.selected = target
+      if (!this.messages[target]) {
+        this.messages = {
+          ...this.messages,
+          [target]: []
+        }
+      }
+      if (!this.targets.includes(target)) {
+        this.targets = [
+          ...this.targets,
+          target
+        ]
+      }
     }
   },
-  components: {
-    ChatBox
+  computed: {
+    targetMessages: vm => vm.messages[vm.selected]
   },
   created () {
     socket.on('chat', (data) => {
-      this.messages.push(data)
+      const message = {nick: data.nick, message: data.message}
+      this.messages = {
+        ...this.messages,
+        [data.target]: [
+          ...(this.messages[data.target] || {}),
+          message
+        ]
+      }
     })
+  },
+  components: {
+    ChatBox,
+    ChatMenu
   }
 }
 </script>
@@ -84,10 +120,13 @@ export default {
 .container {
   position: relative;
   text-align: center;
-  width: 700px;
+  width: 900px;
   margin: 0 auto;
   background: #d4f6ff;
   border-radius: 5px;
+}
+.container-chat-box {
+  display: flex;
 }
 input:focus, button:focus {
   outline: 0;
