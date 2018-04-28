@@ -80,6 +80,12 @@ export default {
         ]
       }
     })
+    if (!this.targets.includes(data.target)) {
+      this.targets = [
+        ...targets,
+        data.target
+      ]
+    }
   },
   components: {
     ChatBox,
