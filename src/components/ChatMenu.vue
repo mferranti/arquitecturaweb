@@ -1,6 +1,11 @@
 <template>
   <ul id="chat-menu">
-    <li v-for="(target, index) in targets" :key="index" class="chat-item" v-on:click="changeTarget(target)">
+    <li
+      v-for="(target, index) in targets"
+      :key="index"
+      :class="{ 'chat-item': true, 'target-selected': (target === selected) }"
+      v-on:click="changeTarget(target)"
+    >
       <span class="chat-id">{{ target }}</span>
     </li>
   </ul>
@@ -9,7 +14,7 @@
 <script>
 export default {
   name: 'chat-menu',
-  props: ['targets', 'changeTarget']
+  props: ['targets', 'changeTarget', 'selected']
 }
 </script>
 
@@ -34,5 +39,9 @@ export default {
 }
 .chat-id {
   font-weight: bold;
+}
+.target-selected {
+  color: #e04d27;
+  background: #99eaff;
 }
 </style>

@@ -1,7 +1,7 @@
 <template>
   <div class="container">
     <div class="container-chat-box">
-      <chat-menu class="chat-menu" :targets="targets" :changeTarget="changeTarget"></chat-menu>
+      <chat-menu class="chat-menu" :targets="targets" :changeTarget="changeTarget" :selected="selected"></chat-menu>
       <chat-box :messages="targetMessages" :changeTarget="changeTarget"></chat-box>
     </div>
     <div class="input-container">
