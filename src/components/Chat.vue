@@ -42,12 +42,23 @@ export default {
   methods: {
     send () {
       if (this.msg.length > 0) {
-        socket.emit('chat', {
+        const message = {
           target: this.selected,
           nick: this.nick,
           message: this.msg
-        })
+        }
+        socket.emit('chat', message)
         this.msg = ''
+      }
+    },
+    addMessage (data) {
+      const message = {nick: data.nick, message: data.message}
+      this.messages = {
+        ...this.messages,
+        [data.target]: [
+          ...(this.messages[data.target] || {}),
+          message
+        ]
       }
     },
     changeTarget (target) {
@@ -70,15 +81,9 @@ export default {
     targetMessages: vm => vm.messages[vm.selected]
   },
   created () {
+    socket.emit('connected', { nick: this.nick })
     socket.on('chat', (data) => {
-      const message = {nick: data.nick, message: data.message}
-      this.messages = {
-        ...this.messages,
-        [data.target]: [
-          ...(this.messages[data.target] || {}),
-          message
-        ]
-      }
+      this.addMessage(data)
       if (!this.targets.includes(data.target)) {
         this.targets = [
           ...this.targets,
