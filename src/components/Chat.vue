@@ -83,7 +83,7 @@ export default {
   created () {
     socket.emit('connected', { nick: this.nick })
     socket.on('chat', (data) => {
-      this.addMessage(data)
+      this.addMessage({...data, target: data.target === 'global' ? data.target : data.nick})
       if (!this.targets.includes(data.target)) {
         this.targets = [
           ...this.targets,
