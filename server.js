@@ -128,7 +128,12 @@ io.on('connection', (socket) => {
   });
   socket.on('disconnect', function(data) {
     console.log('disconnect: ', data);
-    users = new Map([...users.entries()].map(([nick, sockets]) => [nick, sockets.filter(s => s !== socket.id)]));
+    users = new Map([...users.entries()].map(
+      ([nick, v]) => [
+        nick,
+        {app: APP_NAME, sockets: v.sockets.filter(s => s !== socket.id)}
+      ]
+    ));
   });
   socket.on('chat', async (data) => {
     if (data.target === 'global') {
