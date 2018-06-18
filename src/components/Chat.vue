@@ -83,19 +83,11 @@ export default {
   created () {
     socket.emit('connected', { nick: this.nick })
     socket.on('chat', (data) => {
-      let target
-      if (data.target === 'global') {
-        target = 'global'
-      } else if (data.target === this.nick) {
-        target = data.nick
-      } else {
-        target = data.target
-      }
-      this.addMessage({...data, target})
-      if (!this.targets.includes(target)) {
+      this.addMessage(data)
+      if (!this.targets.includes(data.target)) {
         this.targets = [
           ...this.targets,
-          target
+          data.target
         ]
       }
     })

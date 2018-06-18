@@ -8,40 +8,46 @@ const bodyParser = require('body-parser')
 
 const APP_NAME = 'vue';
 const INTEGRATOR_BASE = 'https://awebchat-integration.herokuapp.com';
-const postToIntegrator = async (body, endpoint) => superagent.post(`${INTEGRATOR_BASE}${endpoint}`)
-  .send(body)
-  .set('Accept', 'application/json')
+const postToIntegrator = async (body, endpoint) => {
+  try {
+    superagent.post(`${INTEGRATOR_BASE}${endpoint}`)
+      .send(body)
+      .set('Accept', 'application/json')
+  } catch (err) {
+    console.log('Cant send message: ', err.message);
+  }
+}
 
 function response(res, statusCode, value) {
   res.status(statusCode);
   res.json(value);
 }
 
-function receiveMessage(envelope, target) {
+function receiveMessage(envelop, target) {
   return {
     target,
-    nick: envelope.from.name,
-    message: envelope.msg
+    nick: envelop.from.name,
+    message: envelop.msg
   };
 }
 
-function buildExternalPrivateMessage(envelope, targetApp) {
+function buildExternalPrivateMessage(envelop, targetApp) {
   return {
-    ...buildExternalPublicMessage(envelope),
+    ...buildExternalPublicMessage(envelop),
     to: {
-      id: `id-${envelope.target}`,
-      name: envelope.target,
+      id: `id-${envelop.target}`,
+      name: envelop.target,
     },
     targetApp,
   }
 }
-function buildExternalPublicMessage(envelope) {
+function buildExternalPublicMessage(envelop) {
   return {
     from: {
-      id: `id-${envelope.nick}`,
-      name: envelope.nick,
+      id: `id-${envelop.nick}`,
+      name: envelop.nick,
     },
-    msg: envelope.message,
+    msg: envelop.message,
     to: null,
     sourceApp: APP_NAME,
     targetApp: null,
@@ -52,11 +58,12 @@ function buildExternalPublicMessage(envelope) {
 function _sendPrivate(envelop) {
   const target = users.get(envelop.target);
   const source = users.get(envelop.nick);
-
-  Array.from(new Set([
-    ...(source ? source.sockets : []),
-    ...(target ? target.sockets : []),
-  ])).map(socketId => io.to(socketId).emit('chat', envelop));
+  if (target !== source ) {
+    target.sockets.map(socketId => io.to(socketId).emit('chat', {...envelop, target: envelop.nick}));
+  }
+  if (source) {
+    source.sockets.map(socketId => io.to(socketId).emit('chat', envelop));
+  }
   console.log(`Private message to ${envelop.target}`, envelop);
 }
 
@@ -86,7 +93,6 @@ app.get('/api/contacts', (req, res) => {
 
 app.post('/api/public/send', (req, res) => {
   try {
-    console.log(req.body);
     const envelop = receiveMessage(req.body, 'global');
     _sendPublic(envelop);
     registerExternalUser(req.body);
