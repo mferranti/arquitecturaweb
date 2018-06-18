@@ -4,6 +4,7 @@ const serveStatic = require('serve-static');
 const socket= require('socket.io');
 const history = require('connect-history-api-fallback');
 const superagent = require('superagent')
+const bodyParser = require('body-parser')
 
 const APP_NAME = 'vue';
 const INTEGRATOR_BASE = 'https://awebchat-integration.herokuapp.com';
@@ -72,16 +73,23 @@ let app = express();
 
 let users = new Map;
 
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json())
+
 app.get('/api/contacts', (req, res) => {
   const _users = Array.from(users.keys())
-  response(res, 200, _users.map(u => ({id: `id-${u}`, name: u})))
+  response(res, 200, _users
+    .filter(u => (users.get(u)).app === APP_NAME)
+    .map(u => ({id: `id-${u}`, name: u}))
+  )
 });
 
 app.post('/api/public/send', (req, res) => {
   try {
+    console.log(req.body);
     const envelop = receiveMessage(req.body, 'global');
     _sendPublic(envelop);
-    registerExternalUser(envelop);
+    registerExternalUser(req.body);
     response(res, 200, {});
   } catch (err) {
     response(res, err.status, {msg: err.message});
@@ -92,7 +100,7 @@ app.post('/api/private/send', (req, res) => {
   try {
     const envelop = receiveMessage(req.body, req.body.to.name);
     _sendPrivate(envelop);
-    registerExternalUser(envelop);
+    registerExternalUser(req.body);
     response(res, 200, {});
   } catch (err) {
     response(res, err.status, {msg: err.message});
