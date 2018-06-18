@@ -35,7 +35,7 @@ function buildExternalPrivateMessage(envelope, targetApp) {
     targetApp,
   }
 }
-function buildExternalMessage(envelope) {
+function buildExternalPublicMessage(envelope) {
   return {
     from: {
       id: `id-${envelope.nick}`,
@@ -146,11 +146,11 @@ io.on('connection', (socket) => {
   socket.on('chat', async (data) => {
     if (data.target === 'global') {
       _sendPublic(data);
-      await postToIntegrator(buildExternalMessage(data), '/public/send');
+      await postToIntegrator(buildExternalPublicMessage(data), '/public/send');
     } else {
       _sendPrivate(data);
       if ((users.get(data.target)).app !== APP_NAME) {
-        await postToIntegrator(buildExternalMessage(data, data.target), '/private/send');
+        await postToIntegrator(buildExternalPrivateMessage(data, data.target), '/private/send');
       }
     }
   });
