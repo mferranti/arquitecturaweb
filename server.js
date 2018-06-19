@@ -33,14 +33,14 @@ function receiveMessage(envelop, target) {
   };
 }
 
-function buildExternalPrivateMessage(envelop, targetApp) {
+function buildExternalPrivateMessage(envelop, to) {
   return {
     ...buildExternalPublicMessage(envelop),
     to: {
-      id: `id-${envelop.target}`,
-      name: envelop.target,
+      id: `${to.id}`,
+      name: to.nick,
     },
-    targetApp,
+    targetApp: to.app,
   }
 }
 function buildExternalPublicMessage(envelop) {
@@ -75,7 +75,7 @@ function _sendPublic(envelop) {
 }
 
 function registerExternalUser(envelop) {
-  users.set(envelop.from.name, {sockets: [], app: envelop.sourceApp});
+  users.set(envelop.from.name, {sockets: [], app: envelop.sourceApp, id: envelop.from.id});
 }
 
 let app = express();
@@ -133,11 +133,13 @@ io.on('connection', (socket) => {
       value = {
         sockets: [...((users.get(data.nick)).sockets), socket.id],
         app: APP_NAME,
+        id: `id-${data.nick}`,
       };
     } else {
       value = {
         sockets: [socket.id],
         app: APP_NAME,
+        id: `id-${data.nick}`,
       };
     }
     users.set(data.nick, value);
@@ -157,8 +159,9 @@ io.on('connection', (socket) => {
       await postToIntegrator(buildExternalPublicMessage(data), '/public/send');
     } else {
       _sendPrivate(data);
-      if ((users.get(data.target)).app !== APP_NAME) {
-        await postToIntegrator(buildExternalPrivateMessage(data, data.target), '/private/send');
+      const to = {nick: data.target, ...users.get(data.target)};
+      if (to.app !== APP_NAME) {
+        await postToIntegrator(buildExternalPrivateMessage(data, to), '/private/send');
       }
     }
   });
