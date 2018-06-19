@@ -7,12 +7,14 @@ const superagent = require('superagent')
 const bodyParser = require('body-parser')
 
 const APP_NAME = 'vue';
+// const INTEGRATOR_BASE = 'http://localhost:6000';
 const INTEGRATOR_BASE = 'https://awebchat-integration.herokuapp.com';
 const postToIntegrator = async (body, endpoint) => {
   try {
-    superagent.post(`${INTEGRATOR_BASE}${endpoint}`)
+    const r = await superagent.post(`${INTEGRATOR_BASE}${endpoint}`)
       .send(body)
       .set('Accept', 'application/json')
+    console.log(`${endpoint} ${r.text}: `, body);
   } catch (err) {
     console.log('Cant send message: ', err.message);
   }
@@ -94,8 +96,8 @@ app.get('/api/contacts', (req, res) => {
 app.post('/api/public/send', (req, res) => {
   try {
     const envelop = receiveMessage(req.body, 'global');
-    _sendPublic(envelop);
     registerExternalUser(req.body);
+    _sendPublic(envelop);
     response(res, 200, {});
   } catch (err) {
     response(res, err.status, {msg: err.message});
@@ -105,8 +107,8 @@ app.post('/api/public/send', (req, res) => {
 app.post('/api/private/send', (req, res) => {
   try {
     const envelop = receiveMessage(req.body, req.body.to.name);
-    _sendPrivate(envelop);
     registerExternalUser(req.body);
+    _sendPrivate(envelop);
     response(res, 200, {});
   } catch (err) {
     response(res, err.status, {msg: err.message});
@@ -135,7 +137,7 @@ io.on('connection', (socket) => {
     } else {
       value = {
         sockets: [socket.id],
-        app: 'vue',
+        app: APP_NAME,
       };
     }
     users.set(data.nick, value);
